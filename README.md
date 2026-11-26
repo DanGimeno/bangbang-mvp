@@ -79,6 +79,13 @@ Open the page, click **Enable microphone**, stay quiet for the 2-second calibrat
 menu shows a _Developer_ box with “fire with left mouse button”. It is off by default and is
 for debugging only. The voice is the trigger.
 
+## Deployment
+
+The game is a static site (`npm run build` → `dist/`). It is deployed on Vercel; `vercel.json`
+pins the Vite preset, the build command and the output directory, so the dashboard's framework
+detection doesn't matter. Any static host works, as long as it serves the page over `https://`
+(required for microphone access).
+
 ## Browser & microphone requirements
 
 - Desktop Chrome, Edge or Firefox (recent versions). Safari is untested. Mobile is out of scope.
