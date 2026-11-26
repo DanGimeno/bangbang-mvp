@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="BANG! BANG! — The Vocal Shooter. Your mouth is the trigger."
+    />
+    <meta name="theme-color" content="#1b1b1f" />
+    <title>BANG! BANG!</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <canvas id="game" aria-label="Shooting range"></canvas>
+
+    <!-- In-game HUD -->
+    <div id="hud" class="hud" hidden>
+      <div class="hud-top">
+        <div class="stat"><span class="stat-label">Hits</span><span id="hud-hits">0</span></div>
+        <div class="stat"><span class="stat-label">Shots</span><span id="hud-shots">0</span></div>
+        <div class="stat">
+          <span class="stat-label">Accuracy</span><span id="hud-accuracy">–</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label">Bullseyes</span><span id="hud-bullseyes">0</span>
+        </div>
+      </div>
+
+      <div class="crosshair" aria-hidden="true"></div>
+      <div id="hud-hitmarker" class="hitmarker" aria-hidden="true"></div>
+      <div id="hud-cues" class="cues" aria-live="off"></div>
+      <div id="hud-message" class="hud-message" role="status"></div>
+
+      <div class="hud-mic">
+        <div class="hud-mic-label">
+          <span id="hud-mic-dot" class="mic-dot"></span><span id="hud-mic-text">MIC OFF</span>
+        </div>
+        <div class="meter meter-small">
+          <div id="hud-meter-fill" class="meter-fill"></div>
+          <div id="hud-meter-threshold" class="meter-threshold"></div>
+        </div>
+      </div>
+
+      <div class="hud-weapon">
+        <div id="hud-weapon-slots" class="slots"></div>
+        <div id="hud-weapon-name" class="weapon-name"></div>
+        <div id="hud-weapon-tagline" class="weapon-tagline"></div>
+        <div id="hud-weapon-hint" class="weapon-hint"></div>
+        <div class="ammo">
+          <span id="hud-ammo">0</span><span id="hud-mag" class="ammo-mag">/ 0</span>
+        </div>
+        <div id="hud-reload" class="reload" hidden>
+          <div id="hud-reload-step" class="reload-step"></div>
+          <div class="reload-bar"><div id="hud-reload-fill" class="reload-fill"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Title / pause / settings overlay -->
+    <div id="overlay" class="overlay">
+      <div class="panel">
+        <header class="title">
+          <h1 class="logo">BANG! <span>BANG!</span></h1>
+          <p class="subtitle">The Vocal Shooter</p>
+          <p class="tagline">Your mouth is the trigger. Your finger is the gun.</p>
+          <p id="overlay-state" class="paused-label" hidden>— PAUSED —</p>
+        </header>
+
+        <div class="cards">
+          <section class="card" aria-labelledby="mic-heading">
+            <h2 id="mic-heading">1. Microphone</h2>
+            <p id="mic-status" class="mic-status">
+              Microphone is off. You will need it: there is no trigger.
+            </p>
+            <div class="row">
+              <button id="mic-enable" class="btn">Enable microphone</button>
+              <select id="mic-device" aria-label="Microphone device" disabled>
+                <option value="">Default microphone</option>
+              </select>
+            </div>
+
+            <div class="meter-wrap">
+              <div class="meter meter-big" aria-label="Microphone input level">
+                <div id="setup-meter-fill" class="meter-fill"></div>
+                <div id="setup-meter-floor" class="meter-floor"></div>
+                <div id="setup-meter-threshold" class="meter-threshold"></div>
+              </div>
+              <div id="setup-detect" class="detect-lamp" aria-live="polite">SAY “BANG!”</div>
+            </div>
+            <p class="legend">
+              <span class="legend-floor">▮ noise floor</span>
+              <span class="legend-threshold">▮ trigger threshold</span>
+              <span id="setup-levels" class="mono"></span>
+            </p>
+
+            <div class="row">
+              <button id="mic-calibrate" class="btn btn-secondary" disabled>
+                Calibrate noise (stay quiet 2s)
+              </button>
+            </div>
+            <p id="calibration-status" class="hint">
+              Not calibrated yet — using a default noise floor.
+            </p>
+
+            <label class="field">
+              <span>Sensitivity <output id="out-sensitivity"></output></span>
+              <input id="set-sensitivity" type="range" min="0" max="100" step="1" />
+            </label>
+            <label class="field">
+              <span>Shot debounce <output id="out-debounce"></output></span>
+              <input id="set-debounce" type="range" min="20" max="400" step="5" />
+            </label>
+            <label class="field">
+              <span>Voice release <output id="out-release"></output></span>
+              <input id="set-release" type="range" min="30" max="400" step="5" />
+            </label>
+            <label class="check"
+              ><input id="set-adaptive" type="checkbox" /> Adapt to changing background noise</label
+            >
+            <label class="check"
+              ><input id="set-suppression" type="checkbox" /> Browser noise suppression (may swallow
+              short shots)</label
+            >
+            <p class="privacy">
+              🔒 Audio is analysed locally, in your browser, a few milliseconds at a time. Nothing
+              is recorded, stored or sent anywhere.
+            </p>
+          </section>
+
+          <section class="card" aria-labelledby="controls-heading">
+            <h2 id="controls-heading">2. Equipment briefing</h2>
+            <p class="briefing">
+              There are no guns. Make a finger gun, aim with the mouse and
+              <strong>say the shot out loud</strong>. Your imaginary weapons deal very real damage.
+            </p>
+            <ul class="controls">
+              <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move</li>
+              <li><kbd>Mouse</kbd> Aim (point your finger, it helps morale)</li>
+              <li><kbd>🗣️</kbd> “Bang!” Fire</li>
+              <li><kbd>R</kbd> Elaborate reload gesture</li>
+              <li>
+                <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> Finger Pistol · Two-Finger Shotgun · Automatic
+                Nothing
+              </li>
+              <li><kbd>Esc</kbd> Pause / settings</li>
+            </ul>
+            <label class="field">
+              <span>Mouse sensitivity <output id="out-mouse"></output></span>
+              <input id="set-mouse" type="range" min="0.0005" max="0.01" step="0.0001" />
+            </label>
+            <label class="check"><input id="set-invert" type="checkbox" /> Invert mouse Y</label>
+
+            <div id="debug-card" class="debug" hidden>
+              <h3>Developer</h3>
+              <label class="check"
+                ><input id="set-mousefire" type="checkbox" /> Debug: fire with left mouse
+                button</label
+              >
+            </div>
+          </section>
+        </div>
+
+        <div class="actions">
+          <button id="btn-start" class="btn btn-primary">START</button>
+          <button id="btn-quit" class="btn btn-secondary" hidden>Quit to menu</button>
+        </div>
+        <p id="overlay-error" class="error" role="alert" hidden></p>
+      </div>
+    </div>
+
+    <div id="fatal" class="fatal" hidden></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
