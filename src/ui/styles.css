@@ -547,12 +547,6 @@ kbd {
   white-space: nowrap;
 }
 
-.cue.dry {
-  color: var(--cream);
-  font-size: 34px;
-  text-shadow: 3px 3px 0 var(--ink);
-}
-
 @keyframes cue {
   0% {
     opacity: 1;
@@ -654,44 +648,6 @@ kbd {
 .weapon-hint {
   font-size: 16px;
   margin-top: 2px;
-}
-
-.ammo {
-  font-size: 56px;
-  line-height: 1;
-}
-
-.ammo.empty {
-  color: var(--red);
-}
-
-.ammo-mag {
-  font-size: 26px;
-  opacity: 0.8;
-  margin-left: 4px;
-}
-
-.reload {
-  margin-top: 4px;
-}
-
-.reload-step {
-  font-size: 15px;
-}
-
-.reload-bar {
-  height: 8px;
-  margin-top: 3px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 2px solid var(--ink);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.reload-fill {
-  height: 100%;
-  width: 0%;
-  background: var(--yellow);
 }
 
 .fatal {

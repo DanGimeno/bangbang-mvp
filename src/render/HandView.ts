@@ -9,9 +9,7 @@ import {
   type Mesh,
   type Scene,
 } from '@babylonjs/core';
-import type { WeaponState } from '../weapons/WeaponState';
 import type { HandPose, WeaponDef } from '../weapons/weaponDefs';
-import { RELOAD_KEYFRAMES, sampleKeyframes } from './handAnimation';
 
 /** Draw the hands after the world, so they never clip into walls. */
 const VIEW_RENDERING_GROUP = 1;
@@ -52,7 +50,6 @@ export class HandView {
   private readonly flash: Mesh;
   private readonly flashLight: PointLight;
   private current: Rig;
-  private currentDef: WeaponDef;
   private kick = 0;
   private thumbDrop = 0;
   private flashMs = 0;
@@ -82,13 +79,11 @@ export class HandView {
     this.flashLight.range = 8;
     this.flashLight.intensity = 0;
 
-    this.currentDef = initial;
     this.current = this.rigFor(initial);
     for (const rig of this.rigs.values()) rig.root.setEnabled(rig === this.current);
   }
 
   equip(def: WeaponDef): void {
-    this.currentDef = def;
     this.current = this.rigFor(def);
     for (const rig of this.rigs.values()) rig.root.setEnabled(rig === this.current);
     this.switchMs = SWITCH_MS;
@@ -107,7 +102,7 @@ export class HandView {
     this.flashLight.position.set(0, 0, 0.05);
   }
 
-  update(dtMs: number, weapon: WeaponState, now: number, moving: boolean): void {
+  update(dtMs: number, moving: boolean): void {
     const dt = dtMs / 1000;
     const rig = this.current;
     this.kick *= Math.exp(-12 * dt);
@@ -116,23 +111,20 @@ export class HandView {
     this.switchMs = Math.max(0, this.switchMs - dtMs);
     if (moving) this.bobPhase += dt * 9;
 
-    const reload = weapon.isReloading
-      ? sampleKeyframes(RELOAD_KEYFRAMES[this.currentDef.viewModel], weapon.reloadProgress(now))
-      : null;
     const lower = this.switchMs / SWITCH_MS;
     const bob = moving ? Math.sin(this.bobPhase) * 0.008 : 0;
     const sway = moving ? Math.cos(this.bobPhase * 0.5) * 0.006 : 0;
 
     rig.root.position.set(
-      rig.restPosition.x + sway + (reload?.d[0] ?? 0),
-      rig.restPosition.y + bob - lower * 0.3 + (reload?.d[1] ?? 0),
-      rig.restPosition.z - this.kick * 0.04 + (reload?.d[2] ?? 0),
+      rig.restPosition.x + sway,
+      rig.restPosition.y + bob - lower * 0.3,
+      rig.restPosition.z - this.kick * 0.04,
     );
     rig.root.rotation.set(
       // The wrist flicks upwards on recoil, as tradition demands.
-      rig.restRotation.x - this.kick * 0.4 + (reload?.r[0] ?? 0),
-      rig.restRotation.y + (reload?.r[1] ?? 0),
-      rig.restRotation.z + (reload?.r[2] ?? 0),
+      rig.restRotation.x - this.kick * 0.4,
+      rig.restRotation.y,
+      rig.restRotation.z,
     );
     for (const thumb of rig.thumbs) thumb.rotation.x = this.thumbDrop * 1.1;
 

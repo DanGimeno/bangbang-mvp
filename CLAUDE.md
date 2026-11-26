@@ -8,7 +8,7 @@ Persistent guidance for Claude Code sessions in this repository. Read this first
 **imitating gunshot sounds into the microphone**. _Your mouth is the trigger._
 
 **Creative direction: there are no guns.** Weapons are imaginary: finger guns, two-finger
-shotguns, empty hands carrying an "Automatic Nothing". Ammo, recoil, reloads and damage all
+shotguns, empty hands carrying an "Automatic Nothing". Recoil, fire rate and damage all
 still exist, and the game takes them completely seriously. That deadpan seriousness is the
 joke. Never add physical gun models. See `docs/GAME_DESIGN.md`.
 
@@ -55,7 +55,7 @@ See `docs/ARCHITECTURE.md` for diagrams. In short:
   trigger input (`pullTrigger` / `setTriggerHeld`). Replacing the detector must not
   require touching weapons.
 - **Weapons are data.** New weapons are entries in `src/weapons/weaponDefs.ts` (plus a hand
-  pose in `render/HandView.ts` / `render/handAnimation.ts` if new). Do not subclass per weapon.
+  pose in `render/HandView.ts` if new). Do not subclass per weapon.
 - `core/Game.ts` is the composition root: it wires systems through callbacks/events.
   Systems do not import each other's concrete classes beyond what they consume.
 - The render loop and game state are independent of any UI framework. The UI is plain DOM

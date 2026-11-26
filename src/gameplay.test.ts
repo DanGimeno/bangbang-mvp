@@ -12,7 +12,6 @@ import { EventBus } from './core/EventBus';
 import { GameStateMachine } from './core/GameStateMachine';
 import { createRng, degToRad } from './core/math';
 import { applyLook, clampToBounds, computeMoveDelta, MAX_PITCH } from './player/movement';
-import { RELOAD_KEYFRAMES, reloadStepIndex, sampleKeyframes } from './render/handAnimation';
 import { TargetLogic } from './targets/TargetLogic';
 
 describe('movement', () => {
@@ -153,36 +152,5 @@ describe('settings', () => {
     expect(() => saveSettings(broken, settings)).not.toThrow();
     data.set('bangbang.settings.v1', '{not json');
     expect(loadSettings(storage)).toEqual(DEFAULT_SETTINGS);
-  });
-});
-
-describe('hand animation', () => {
-  it('every reload gesture starts and ends at the rest pose (mod 2π)', () => {
-    const wrap = (r: number) => Math.abs(Math.sin(r / 2));
-    for (const keys of Object.values(RELOAD_KEYFRAMES)) {
-      for (const p of [0, 1]) {
-        const pose = sampleKeyframes(keys, p);
-        for (const d of pose.d) expect(d).toBeCloseTo(0);
-        for (const r of pose.r) expect(wrap(r)).toBeCloseTo(0);
-      }
-    }
-  });
-
-  it('interpolates between keyframes', () => {
-    const pose = sampleKeyframes(
-      [
-        { t: 0, d: [0, 0, 0], r: [0, 0, 0] },
-        { t: 1, d: [2, 0, 0], r: [0, 0, 0] },
-      ],
-      0.5,
-    );
-    expect(pose.d[0]).toBeCloseTo(1);
-  });
-
-  it('picks reload captions by progress', () => {
-    expect(reloadStepIndex(3, 0)).toBe(0);
-    expect(reloadStepIndex(3, 0.5)).toBe(1);
-    expect(reloadStepIndex(3, 1)).toBe(2);
-    expect(reloadStepIndex(0, 0.5)).toBe(-1);
   });
 });

@@ -19,21 +19,23 @@ to its logical, utterly ridiculous conclusion:
 
 - **Players make finger guns** and imitate gunshots with their mouths. They are grown adults
   playing imaginary gun battles, except the imaginary weapons actually deal damage.
-- **The game takes its imaginary weapons extremely seriously.** Ammo counters, recoil,
-  reload procedures, weapon taglines and military briefings are all delivered deadpan. The
-  contrast between the solemn presentation and the absurd reality is the core joke.
-- Comedy comes from **player interaction** (the noises people make, the panic of a dry fire,
-  a reload twirl at the worst moment), not from scripted gags.
+- **The game takes its imaginary weapons extremely seriously.** Recoil, fire rates, weapon
+  taglines and military briefings are all delivered deadpan. The contrast between the solemn
+  presentation and the absurd reality is the core joke.
+- **There is no ammunition and no reloading.** The player's lungs are the magazine: the real
+  limit on firing is running out of breath, and catching it again is the reload.
+- Comedy comes from **player interaction** (the noises people make, gasping for air
+  mid-firefight), not from scripted gags.
 
-| Imaginary weapon                         | Representation                                          | Status                                          |
-| ---------------------------------------- | ------------------------------------------------------- | ----------------------------------------------- |
-| Pistol                                   | A finger gun (index out, thumb up as the hammer)        | **[Implemented]** Finger Pistol                 |
-| Shotgun                                  | Two fingers extended, second hand cupping for stability | **[Implemented]** Two-Finger Shotgun            |
-| Automatic weapon                         | Two hands carrying absolutely nothing                   | **[Implemented]** Automatic Nothing             |
-| Dual pistols                             | Two finger guns                                         | [Planned]                                       |
-| Grenades                                 | Imaginary. Throw gesture, “fiuuu… BOOM”                 | [Planned]                                       |
-| Sniper rifle, laser gun, rocket launcher | Hand poses TBD                                          | [Experimental]                                  |
-| Reloading                                | An unnecessarily elaborate hand gesture                 | **[Implemented]** keyframed gestures + captions |
+| Imaginary weapon                         | Representation                                          | Status                                       |
+| ---------------------------------------- | ------------------------------------------------------- | -------------------------------------------- |
+| Pistol                                   | A finger gun (index out, thumb up as the hammer)        | **[Implemented]** Finger Pistol              |
+| Shotgun                                  | Two fingers extended, second hand cupping for stability | **[Implemented]** Two-Finger Shotgun         |
+| Automatic weapon                         | Two hands carrying absolutely nothing                   | **[Implemented]** Automatic Nothing          |
+| Dual pistols                             | Two finger guns                                         | [Planned]                                    |
+| Grenades                                 | Imaginary. Throw gesture, “fiuuu… BOOM”                 | [Planned]                                    |
+| Sniper rifle, laser gun, rocket launcher | Hand poses TBD                                          | [Experimental]                               |
+| Ammunition / reloading                   | None. Breath is the only magazine                       | **[Implemented]** (removed by design, D-014) |
 
 ## 2. Target audience
 
@@ -48,7 +50,7 @@ to its logical, utterly ridiculous conclusion:
 1. Look for a target → aim with the mouse.
 2. **Say the shot** (“Bang!”), and the imaginary weapon fires instantly.
 3. See the result: the target falls, a comic “BANG!” pops on screen, the hit counter ticks.
-4. Run dry → “_click_” → **R**, and watch your character perform the reload ritual.
+4. Keep going until you run out of breath, catch it, and go again.
 5. Repeat until hoarse.
 
 Session length target: 2–5 minute rounds, highly replayable.
@@ -64,7 +66,6 @@ Session length target: 2–5 minute rounds, highly replayable.
 | Louder shot = bigger on-screen onomatopoeia                           | **[Implemented]** (cosmetic only)                             |
 | Weapon-specific sounds required (“pew” for laser, “boom” for shotgun) | [Experimental]: needs sound classification, see AUDIO_SYSTEM  |
 | Fire rate driven by how fast you say it                               | [Experimental]                                                |
-| Vocal reload (“click-clack”)                                          | [Experimental]                                                |
 | Suppressed weapons requiring whispering                               | [Experimental]                                                |
 | Accidental firing (laughing, talking) as comedy                       | [Experimental]: currently a side effect, may become a feature |
 | Enemies reacting to player noise                                      | [Experimental]                                                |
@@ -75,15 +76,15 @@ Design rule: mechanics must stay **language-independent**. We detect _sound shap
 
 ## 5. Weapons (current data, `src/weapons/weaponDefs.ts`)
 
-| Weapon             | Say                     | Mode | Mag | Cooldown | Pellets | Tagline                                             |
-| ------------------ | ----------------------- | ---- | --- | -------- | ------- | --------------------------------------------------- |
-| Finger Pistol      | “Bang!” / “Pum!”        | semi | 8   | 180 ms   | 1       | Standard issue. Index finger, 1 each.               |
-| Two-Finger Shotgun | “BOOM!”                 | semi | 4   | 650 ms   | 9       | Twice the fingers. Twice the responsibility.        |
-| Automatic Nothing  | “Ratatatata!” / “Trrrr” | auto | 30  | 95 ms    | 1       | Fully automatic. Fully imaginary. Handle with care. |
+| Weapon             | Say                     | Mode | Cooldown | Pellets | Tagline                                             |
+| ------------------ | ----------------------- | ---- | -------- | ------- | --------------------------------------------------- |
+| Finger Pistol      | “Bang!” / “Pum!”        | semi | 180 ms   | 1       | Standard issue. Index finger, 1 each.               |
+| Two-Finger Shotgun | “BOOM!”                 | semi | 650 ms   | 9       | Twice the fingers. Twice the responsibility.        |
+| Automatic Nothing  | “Ratatatata!” / “Trrrr” | auto | 95 ms    | 1       | Fully automatic. Fully imaginary. Handle with care. |
 
 All weapons are hitscan. Today any vocal burst fires any weapon; the "Say" column is a
-suggestion, not a requirement. Each weapon has three reload captions (e.g. _“Removing
-magazine (none)” → “Slapping in new magazine (also none)” → “Racking the void”_).
+suggestion, not a requirement. There is no magazine: the cooldown sets the fire rate, and
+the player's breath limits how long they can keep firing.
 
 ## 6. Potential game modes
 
@@ -100,7 +101,7 @@ magazine (none)” → “Slapping in new magazine (also none)” → “Racking
   teal, tomato red, mustard yellow). **[Implemented, placeholder]**
 - First-person view: **low-poly hands with blue sleeves and white cuffs** posing as weapons.
   The hands animate with full seriousness: a wrist flick on recoil, the thumb dropping like
-  a hammer, the reload rituals. **[Implemented, placeholder]**
+  a hammer. **[Implemented, placeholder]**
 - Muzzle flashes appear at the fingertip. For the Automatic Nothing they appear in thin air,
   where the barrel would be. **[Implemented]**
 - Comic-book onomatopoeia (“BANG!”, “BOOM!”, “_click_”) as the main feedback layer.
@@ -111,7 +112,7 @@ magazine (none)” → “Slapping in new magazine (also none)” → “Racking
 ## 8. Audio direction
 
 - **The player's voice is the gunshot.** The game never plays gunshot sound effects.
-- Possible future sounds: target hits, UI clicks, dry-fire “click”, ambient range sounds,
+- Possible future sounds: target hits, UI clicks, ambient range sounds,
   an announcer reading weapon taglines with total sincerity. All of these must avoid
   feedback into open microphones (keep them short, mid/high frequency, and optional).
 - Proximity voice chat would make every player's gunshots audible to nearby enemies
@@ -132,7 +133,7 @@ magazine (none)” → “Slapping in new magazine (also none)” → “Racking
 - Big, readable onomatopoeia that matches what viewers hear. [Implemented]
 - Streamer overlay / “shot meter” scene source. [Experimental]
 - Spectator mode centred on player audio. [Experimental]
-- Clip-worthy moments: dry fires, reload rituals at the worst moment, accidental shots.
+- Clip-worthy moments: running out of breath mid-firefight, accidental shots.
 
 ## 11. Commercial positioning
 
@@ -151,7 +152,8 @@ magazine (none)” → “Slapping in new magazine (also none)” → “Racking
 3. Should louder shots do more damage? Risks shouting contests and hurts accessibility.
 4. Accessibility: players who cannot or prefer not to use their voice. A non-voice trigger
    mode conflicts with the core identity. Decide how to offer it respectfully.
-5. Does the reload need a vocal component (“click-clack”), or is the gesture enough?
+5. Is breath a strong enough limiter? Long “Trrrrr” bursts on the Automatic Nothing may need
+   an overheat or similar cap if they dominate.
 6. How should finger-gun hand poses communicate dual pistols and grenades clearly in
    first person?
 7. Multiplayer: does hearing opponents' “bang” through voice chat help or hurt?

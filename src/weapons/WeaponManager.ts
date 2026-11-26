@@ -2,10 +2,7 @@ import type { WeaponDef } from './weaponDefs';
 import { WeaponState } from './WeaponState';
 
 export type WeaponEvent =
-  | { type: 'fired'; weapon: WeaponDef; time: number; ammoLeft: number }
-  | { type: 'dry-fire'; weapon: WeaponDef; time: number }
-  | { type: 'reload-start'; weapon: WeaponDef; time: number }
-  | { type: 'reload-complete'; weapon: WeaponDef; time: number }
+  | { type: 'fired'; weapon: WeaponDef; time: number }
   | { type: 'switched'; weapon: WeaponDef; time: number };
 
 /**
@@ -45,7 +42,6 @@ export class WeaponManager {
   switchToSlot(slot: number, now: number): boolean {
     const index = this.states.findIndex((s) => s.def.slot === slot);
     if (index < 0 || index === this.currentIndex) return false;
-    this.current.cancelReload();
     this.currentIndex = index;
     this.triggerHeld = false;
     this.emit({ type: 'switched', weapon: this.current.def, time: now });
@@ -55,13 +51,9 @@ export class WeaponManager {
   /** One discrete trigger pull (a vocal impulse or a debug click). */
   pullTrigger(now: number): boolean {
     const weapon = this.current;
-    const result = weapon.tryFire(now);
-    if (result.fired) {
-      this.emit({ type: 'fired', weapon: weapon.def, time: now, ammoLeft: result.ammoLeft });
-      return true;
-    }
-    if (result.reason === 'empty') this.emit({ type: 'dry-fire', weapon: weapon.def, time: now });
-    return false;
+    if (!weapon.tryFire(now).fired) return false;
+    this.emit({ type: 'fired', weapon: weapon.def, time: now });
+    return true;
   }
 
   /** Sustained trigger (held voice). Only affects automatic weapons. */
@@ -69,22 +61,10 @@ export class WeaponManager {
     this.triggerHeld = held;
   }
 
-  reload(now: number): boolean {
-    const started = this.current.startReload(now);
-    if (started) this.emit({ type: 'reload-start', weapon: this.current.def, time: now });
-    return started;
-  }
-
   update(now: number): void {
     const weapon = this.current;
-    if (weapon.update(now)) {
-      this.emit({ type: 'reload-complete', weapon: weapon.def, time: now });
-    }
     if (this.triggerHeld && weapon.def.fireMode === 'auto' && weapon.canFire(now)) {
-      const result = weapon.tryFire(now);
-      if (result.fired) {
-        this.emit({ type: 'fired', weapon: weapon.def, time: now, ammoLeft: result.ammoLeft });
-      }
+      this.pullTrigger(now);
     }
   }
 

@@ -22,9 +22,9 @@ play with friends or watch on stream.
 | First-person controls (WASD, Pointer Lock mouse look)                       | ✅ Implemented                                                                          |
 | Microphone capture, device selection, level meter, calibration              | ✅ Implemented                                                                          |
 | Vocal impulse detection (local, energy-onset based)                         | ✅ Implemented. Needs tuning with real voices, see [Audio System](docs/AUDIO_SYSTEM.md) |
-| Finger Pistol (hitscan, magazine, reload, cooldown, recoil, muzzle flash)   | ✅ Implemented                                                                          |
+| Finger Pistol (hitscan, cooldown, recoil, muzzle flash)                     | ✅ Implemented                                                                          |
 | Two-Finger Shotgun (pellets) and Automatic Nothing (held voice = auto fire) | ✅ Implemented (experimental)                                                           |
-| Low-poly hand view models with elaborate reload gestures                    | ✅ Implemented (placeholder art)                                                        |
+| Low-poly hand view models                                                   | ✅ Implemented (placeholder art)                                                        |
 | Multiplayer, voice chat, Steam                                              | ❌ Not started (see [Roadmap](docs/ROADMAP.md))                                         |
 
 The audio detection has been verified with automated tests (synthetic signals) and with
@@ -71,7 +71,6 @@ Open the page, click **Enable microphone**, stay quiet for the 2-second calibrat
 | Voice: “Bang!”   | Fire. Hold “Trrrrr” on the Automatic Nothing for auto fire   |
 | Mouse            | Aim (pointer is captured after START)                        |
 | W A S D / arrows | Move                                                         |
-| R                | Reload (an unnecessarily elaborate hand gesture)             |
 | 1 / 2 / 3        | Finger Pistol / Two-Finger Shotgun / Automatic Nothing       |
 | Esc              | Release the mouse and pause; settings live in the pause menu |
 

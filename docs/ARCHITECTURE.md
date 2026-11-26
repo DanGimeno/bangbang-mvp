@@ -48,7 +48,7 @@ src/
     types.ts               AudioFrame, VocalEvent
   weapons/
     weaponDefs.ts          Data-driven weapon definitions (incl. hand pose)
-    WeaponState.ts         Ammo / cooldown / reload (pure)
+    WeaponState.ts         Fire-rate cooldown (pure)
     WeaponManager.ts       Arsenal, switching, trigger → shots (pure)
     vocalTrigger.ts        VocalEvent → trigger input (the only voice/weapon bridge)
   combat/
@@ -63,7 +63,6 @@ src/
   render/
     RangeEnvironment.ts    Low-poly range geometry and lights
     HandView.ts            First-person hands (view models), recoil, muzzle flash
-    handAnimation.ts       Reload gesture keyframes + sampling (pure)
   ui/
     Hud.ts, Menu.ts, dom.ts, styles.css
 ```
@@ -95,7 +94,7 @@ flowchart LR
   Det -- VocalEvent --> Trig
   Trig -- pull / hold --> WM
   Input -- debug mouse --> WM
-  Input -- keys R, 1-9 --> WM
+  Input -- keys 1-9 --> WM
   WM -- fired --> Shoot
   Spread --> Shoot
   Shoot -- hit mesh --> Targets
@@ -133,7 +132,7 @@ stateDiagram-v2
 1. `InputManager` listens to DOM events. Keys only register while the pointer is locked.
 2. Each frame, `PlayerController` consumes the accumulated mouse delta and the WASD intent,
    runs the pure `applyLook` / `computeMoveDelta` / `clampToBounds`, and writes the camera.
-3. Discrete keys (`R`, `Digit1-9`) go through `onKeyPress` to `WeaponManager`.
+3. Number keys (`Digit1-9`) go through `onKeyPress` to `WeaponManager` to switch weapons.
 4. The debug mouse trigger (dev builds or `?debug`, off by default) calls the same
    `pullTrigger` / `setTriggerHeld` API as the voice.
 
@@ -173,7 +172,7 @@ sequenceDiagram
   T->>W: setTriggerHeld(true)
   D->>T: impulse
   T->>W: pullTrigger(now)
-  W->>W: WeaponState.tryFire (ammo, cooldown, reload)
+  W->>W: WeaponState.tryFire (cooldown)
   W-->>S: fired(def)
   S->>S: pelletOffsets → raycasts → TargetManager.tryHit
   W-->>H: fired → recoil, muzzle flash, "BANG!" cue
@@ -183,22 +182,21 @@ sequenceDiagram
 ```
 
 Semi-automatic weapons ignore "held". Automatic weapons fire on each impulse **and** every
-cooldown while held. An empty magazine emits `dry-fire` (“_click_”).
+cooldown while held. There is no ammunition: the player's breath is the only limit.
 
 ## Rendering notes
 
 - Hand view models are parented to the camera and drawn in rendering group 1, so they never
   clip into walls.
 - Hand poses are selected by `WeaponDef.viewModel` (`finger-gun`, `double-barrel`,
-  `empty-hands`). Reload gestures are pure keyframe tracks (`handAnimation.ts`), unit-tested
-  to start and end at the rest pose.
+  `empty-hands`).
 - Babylon is imported from the `@babylonjs/core` barrel. The bundle is ~7 MB (~1.6 MB
   gzip). Deep imports for tree-shaking are a known optimization (see ROADMAP M5).
 
 ## Future multiplayer considerations
 
-- **What goes over the network:** trigger commands (`pull`, `hold on/off`, weapon switch,
-  reload) plus player transforms. **Never audio for gameplay.** Detection stays on the
+- **What goes over the network:** trigger commands (`pull`, `hold on/off`, weapon switch)
+  plus player transforms. **Never audio for gameplay.** Detection stays on the
   client, which also keeps the privacy promise.
 - `WeaponState` / `WeaponManager` / `TargetLogic` / `spread` already take `now` and an RNG,
   so the server can run the same code authoritatively (seeded RNG for pellets).

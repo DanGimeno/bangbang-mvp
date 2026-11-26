@@ -17,7 +17,7 @@ documentation describes the vision and architecture.
 ## M1: Single-player shooting range (current)
 
 **Acceptance:** a player can enable their microphone, calibrate, and knock down targets by
-saying “Bang!”, with ammo, reloads and clear feedback, in desktop Chrome and Firefox. Real-voice
+saying “Bang!”, with clear feedback, in desktop Chrome and Firefox. Real-voice
 detection works well enough that firing feels intentional (target: ≥ 90% hit rate on
 deliberate “Bang!”s, and few false shots in silence and typing).
 
@@ -29,9 +29,10 @@ deliberate “Bang!”s, and few false shots in silence and typing).
 - [x] Ambient noise calibration (auto on first enable, manual recalibration)
 - [x] Sensitivity, debounce and release settings, persisted locally
 - [x] Energy-onset vocal impulse detector with sustain / retrigger / stuck-trigger guard
-- [x] Finger Pistol: hitscan, magazine, ammo counter, reload, cooldown, recoil, muzzle flash
+- [x] Finger Pistol: hitscan, cooldown, recoil, muzzle flash
+- [x] No ammunition or reloading: breath is the limit (D-014)
 - [x] Hit marker, “BANG!” onomatopoeia, hit / shot / accuracy / bullseye counters
-- [x] Low-poly finger-gun hand view model, elaborate reload gesture + captions
+- [x] Low-poly finger-gun hand view model
 - [x] Dev-only mouse trigger (off by default)
 - [x] Unit tests for all pure logic; headless smoke test with a fake microphone
 - [~] **Manual test plan with real voices** (AUDIO_SYSTEM §11) on ≥ 3 microphones
@@ -53,7 +54,7 @@ measured and acceptable (< ~80 ms perceived).
 - [ ] Dual finger pistols (two hands, alternate fire)
 - [ ] Imaginary grenade (“fiuuu… BOOM”), throw gesture
 - [ ] Evaluate per-weapon sound requirement (pew vs boom), see GAME_DESIGN open questions
-- [ ] Optional vocal reload (“click-clack”) experiment
+- [ ] Check whether long held bursts need an overheat cap (breath may be enough)
 - [ ] Hand-art pass: better finger-gun silhouette, sleeve variety
 - [ ] Simple non-gunshot SFX (target hit) that don't trigger the mic
 

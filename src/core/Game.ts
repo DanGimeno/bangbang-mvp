@@ -119,7 +119,6 @@ export class Game {
     this.input.onKeyPress = (code) => {
       if (this.state.state !== 'playing') return;
       const now = performance.now();
-      if (code === 'KeyR') this.weapons.reload(now);
       const digit = /^Digit([1-9])$/.exec(code);
       if (digit) this.weapons.switchToSlot(Number(digit[1]), now);
     };
@@ -160,20 +159,12 @@ export class Game {
         this.hud.popCue(event.weapon.vocalCue, this.lastImpulseStrength);
         if (result.targetsHit > 0) this.hud.hitMarker(result.bullseyes > 0);
         this.hands.onFire(event.weapon);
-        if (event.ammoLeft === 0) this.hud.flashMessage('Out of imaginary ammo! Press R');
         break;
       }
-      case 'dry-fire':
-        this.hud.popCue('*click*', 0, true);
-        this.hud.flashMessage('Out of imaginary ammo! Press R');
-        break;
       case 'switched':
         this.hands.equip(event.weapon);
         this.hud.setWeapons(WEAPONS, event.weapon);
         this.hud.flashMessage(event.weapon.tagline, 2000);
-        break;
-      case 'reload-start':
-      case 'reload-complete':
         break;
     }
   }
@@ -266,7 +257,6 @@ export class Game {
     if (playing) {
       this.player.update(dtMs / 1000, this.input, this.settings.controls);
       this.weapons.update(now);
-      this.hud.updateWeapon(this.weapons.current, now);
       this.hud.updateMic(micOn, this.vocal.levelDb, detector.thresholdDb, detector.isActive);
     } else {
       this.menu.renderLevels(
@@ -279,7 +269,7 @@ export class Game {
     }
     this.targets.update(dtMs);
     this.impacts.update(dtMs);
-    this.hands.update(dtMs, this.weapons.current, now, playing && this.player.isMoving);
+    this.hands.update(dtMs, playing && this.player.isMoving);
     this.scene.render();
   }
 }

@@ -3,53 +3,35 @@ import type { VocalEvent } from '../audio/types';
 import { applyVocalEvent } from './vocalTrigger';
 import { WeaponManager, type WeaponEvent } from './WeaponManager';
 import { WeaponState } from './WeaponState';
-import {
-  FINGER_PISTOL,
-  FINGER_SHOTGUN,
-  NOTHING_RIFLE,
-  WEAPONS,
-  type WeaponDef,
-} from './weaponDefs';
+import { FINGER_PISTOL, FINGER_SHOTGUN, NOTHING_RIFLE, WEAPONS } from './weaponDefs';
 
 describe('weapon definitions', () => {
   it('have unique ids and slots, and a hand pose', () => {
     expect(new Set(WEAPONS.map((w) => w.id)).size).toBe(WEAPONS.length);
     expect(new Set(WEAPONS.map((w) => w.slot)).size).toBe(WEAPONS.length);
     for (const w of WEAPONS) {
-      expect(w.magazineSize).toBeGreaterThan(0);
+      expect(w.cooldownMs).toBeGreaterThan(0);
       expect(w.pellets).toBeGreaterThan(0);
-      expect(w.reloadSteps.length).toBeGreaterThan(0);
       expect(['finger-gun', 'double-barrel', 'empty-hands']).toContain(w.viewModel);
     }
   });
 });
 
 describe('WeaponState', () => {
-  it('fires, consumes ammo and respects the cooldown', () => {
+  it('respects the cooldown', () => {
     const w = new WeaponState(FINGER_PISTOL);
-    expect(w.tryFire(0)).toEqual({ fired: true, ammoLeft: FINGER_PISTOL.magazineSize - 1 });
+    expect(w.tryFire(0)).toEqual({ fired: true });
     expect(w.tryFire(FINGER_PISTOL.cooldownMs - 1)).toEqual({ fired: false, reason: 'cooldown' });
     expect(w.tryFire(FINGER_PISTOL.cooldownMs).fired).toBe(true);
   });
 
-  it('runs dry and reloads over time', () => {
-    const def: WeaponDef = { ...FINGER_PISTOL, magazineSize: 2, cooldownMs: 0, reloadMs: 1000 };
-    const w = new WeaponState(def);
-    w.tryFire(0);
-    w.tryFire(1);
-    expect(w.tryFire(2)).toEqual({ fired: false, reason: 'empty' });
-    expect(w.startReload(10)).toBe(true);
-    expect(w.startReload(20)).toBe(false);
-    expect(w.tryFire(30)).toEqual({ fired: false, reason: 'reloading' });
-    expect(w.reloadProgress(510)).toBeCloseTo(0.5);
-    expect(w.update(500)).toBe(false);
-    expect(w.update(1010)).toBe(true);
-    expect(w.ammo).toBe(2);
-    expect(w.isReloading).toBe(false);
-  });
-
-  it('does not reload a full magazine', () => {
-    expect(new WeaponState(FINGER_PISTOL).startReload(0)).toBe(false);
+  it('never runs out: there is no ammunition, only breath', () => {
+    const w = new WeaponState(FINGER_PISTOL);
+    let fired = 0;
+    for (let i = 0; i < 1000; i++) {
+      if (w.tryFire(i * FINGER_PISTOL.cooldownMs).fired) fired++;
+    }
+    expect(fired).toBe(1000);
   });
 });
 
@@ -69,6 +51,13 @@ describe('WeaponManager', () => {
     expect(events.filter((e) => e.type === 'fired')).toHaveLength(1);
   });
 
+  it('ignores trigger pulls during the cooldown', () => {
+    const manager = new WeaponManager([FINGER_PISTOL]);
+    expect(manager.pullTrigger(0)).toBe(true);
+    expect(manager.pullTrigger(FINGER_PISTOL.cooldownMs / 2)).toBe(false);
+    expect(manager.pullTrigger(FINGER_PISTOL.cooldownMs)).toBe(true);
+  });
+
   it('keeps firing automatic weapons while the trigger is held', () => {
     const manager = new WeaponManager([NOTHING_RIFLE]);
     const events = collect(manager);
@@ -80,37 +69,16 @@ describe('WeaponManager', () => {
     expect(shots).toBe(Math.floor(1000 / NOTHING_RIFLE.cooldownMs) + 1);
   });
 
-  it('emits dry-fire when empty', () => {
-    const manager = new WeaponManager([{ ...FINGER_PISTOL, magazineSize: 1 }]);
-    const events = collect(manager);
-    manager.pullTrigger(0);
-    manager.pullTrigger(1000);
-    expect(events.map((e) => e.type)).toEqual(['fired', 'dry-fire']);
-  });
-
-  it('switches weapons by slot and cancels reloads', () => {
+  it('switches weapons by slot and releases the trigger', () => {
     const manager = new WeaponManager(WEAPONS);
     const events = collect(manager);
-    manager.pullTrigger(0);
-    manager.reload(10);
-    expect(manager.current.isReloading).toBe(true);
+    manager.setTriggerHeld(true);
     expect(manager.switchToSlot(FINGER_SHOTGUN.slot, 20)).toBe(true);
     expect(manager.current.def).toBe(FINGER_SHOTGUN);
+    expect(manager.isTriggerHeld).toBe(false);
     expect(manager.switchToSlot(FINGER_SHOTGUN.slot, 30)).toBe(false);
     expect(manager.switchToSlot(9, 30)).toBe(false);
-    manager.switchToSlot(FINGER_PISTOL.slot, 40);
-    expect(manager.current.isReloading).toBe(false);
-    expect(events.map((e) => e.type)).toEqual(['fired', 'reload-start', 'switched', 'switched']);
-  });
-
-  it('completes reloads through update', () => {
-    const manager = new WeaponManager([FINGER_PISTOL]);
-    const events = collect(manager);
-    manager.pullTrigger(0);
-    manager.reload(0);
-    manager.update(FINGER_PISTOL.reloadMs);
-    expect(events.at(-1)?.type).toBe('reload-complete');
-    expect(manager.current.ammo).toBe(FINGER_PISTOL.magazineSize);
+    expect(events.map((e) => e.type)).toEqual(['switched']);
   });
 
   it('rejects an empty arsenal', () => {

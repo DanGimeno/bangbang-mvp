@@ -109,3 +109,16 @@ versioned key.
 present, and is off by default even then.
 **Rationale:** the requirement is that the microphone is the primary trigger. A visible
 mouse option in production would undermine the core mechanic.
+
+## D-014: No ammunition, no reloading: breath is the magazine
+
+**Context:** after playing the first build, the team noted that the real limit on firing
+is already the player's own breath. Shouting "Bang!" or holding "Trrrrr" for long is
+tiring; catching your breath _is_ the reload.
+**Decision:** remove magazines, the ammo counter, reloading (the `R` key, the reload
+gestures and captions) and dry fire. Weapons keep their cooldown (fire rate), spread,
+pellets, recoil and hand pose.
+**Supersedes:** the magazine/reload fields listed in D-009 and the reload gestures and
+captions in D-011. The removed code (`render/handAnimation.ts`) remains in git history.
+**Revisit if:** playtests show long held bursts on automatic weapons dominate; an overheat
+or similar cap is the first candidate (GAME_DESIGN open question 5).

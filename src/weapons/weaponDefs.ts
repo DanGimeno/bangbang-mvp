@@ -4,7 +4,8 @@
  *
  * Creative direction: there are no guns. Every weapon is imaginary — finger guns,
  * empty hands "holding" an automatic rifle — and the game treats them with complete
- * military seriousness. Ammunition, recoil and reloading still exist. See docs/GAME_DESIGN.md.
+ * military seriousness. Recoil and fire rate still exist; there is no ammunition or reloading,
+ * because the real limit is the player's own breath. See docs/GAME_DESIGN.md.
  */
 export type FireMode =
   /** One shot per vocal impulse ("Bang!"). */
@@ -35,8 +36,6 @@ export interface WeaponDef {
   fireMode: FireMode;
   /** Minimum time between two shots. */
   cooldownMs: number;
-  magazineSize: number;
-  reloadMs: number;
   /** Rays per shot (shotgun > 1). */
   pellets: number;
   /** Cone half-angle in degrees. */
@@ -46,8 +45,6 @@ export interface WeaponDef {
   /** View-model recoil kick (0..1, scales the wrist flick). */
   recoilKick: number;
   viewModel: HandPose;
-  /** Captions for the unnecessarily elaborate reload gesture, shown in order. */
-  reloadSteps: readonly string[];
 }
 
 export const FINGER_PISTOL: WeaponDef = {
@@ -59,14 +56,11 @@ export const FINGER_PISTOL: WeaponDef = {
   vocalHint: '"Bang!" / "Pum!"',
   fireMode: 'semi',
   cooldownMs: 180,
-  magazineSize: 8,
-  reloadMs: 1100,
   pellets: 1,
   spreadDeg: 0.3,
   range: 120,
   recoilKick: 0.6,
   viewModel: 'finger-gun',
-  reloadSteps: ['Ejecting imaginary magazine', 'Regulation twirl', 'Blowing smoke off fingertip'],
 };
 
 export const FINGER_SHOTGUN: WeaponDef = {
@@ -78,18 +72,11 @@ export const FINGER_SHOTGUN: WeaponDef = {
   vocalHint: '"BOOM!"',
   fireMode: 'semi',
   cooldownMs: 650,
-  magazineSize: 4,
-  reloadMs: 1700,
   pellets: 9,
   spreadDeg: 5,
   range: 45,
   recoilKick: 1,
   viewModel: 'double-barrel',
-  reloadSteps: [
-    'Breaking action at the knuckle',
-    'Inserting two (2) shells',
-    'Snapping wrist shut',
-  ],
 };
 
 export const NOTHING_RIFLE: WeaponDef = {
@@ -101,18 +88,11 @@ export const NOTHING_RIFLE: WeaponDef = {
   vocalHint: '"Ratatatata!" / "Trrrrrr!"',
   fireMode: 'auto',
   cooldownMs: 95,
-  magazineSize: 30,
-  reloadMs: 1500,
   pellets: 1,
   spreadDeg: 2,
   range: 90,
   recoilKick: 0.3,
   viewModel: 'empty-hands',
-  reloadSteps: [
-    'Removing magazine (none)',
-    'Slapping in new magazine (also none)',
-    'Racking the void',
-  ],
 };
 
 export const WEAPONS: readonly WeaponDef[] = [FINGER_PISTOL, FINGER_SHOTGUN, NOTHING_RIFLE];
